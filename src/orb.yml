@@ -9,6 +9,10 @@ display:
 commands:
   install:
     description: Install the StrongDM CLI
+    parameters:
+      use-sudo:
+        type: boolean
+        default: true
     steps:
       - run:
           name: Install StrongDM
@@ -16,5 +20,5 @@ commands:
             wget -O sdm.zip "https://app.strongdm.com/releases/cli/linux"
             unzip sdm.zip
             chmod +x sdm
-            sudo mv -f sdm /usr/bin/sdm
+            <<# parameters.use-sudo >>sudo<</ parameters.use-sudo >> mv -f sdm /usr/bin/sdm
             rm sdm.zip
