@@ -1,0 +1,62 @@
+version: 2.1
+
+orbs:
+  orb-tools: circleci/orb-tools@9.1.0
+  strongdm: coda/strongdm@dev:alpha
+
+parameters:
+  run-integration-tests:
+    type: boolean
+    default: false
+  dev-orb-version:
+    type: string
+    default: "dev:alpha"
+
+jobs:
+  integration-test:
+    executor: orb-tools/ubuntu
+    steps:
+      - checkout
+      - strongdm/install
+      - run: sudo sdm help
+
+workflows:
+  dev:
+    unless: << pipeline.parameters.run-integration-tests >>
+    jobs:
+      - orb-tools/lint
+      - orb-tools/shellcheck
+
+      - orb-tools/pack:
+          requires:
+            - orb-tools/lint
+            - orb-tools/shellcheck
+
+      - orb-tools/publish-dev:
+          orb-name: "coda/strongdm"
+          publish-token-variable: ORB_PUBLISH_TOKEN
+          requires:
+            - orb-tools/pack
+
+      - orb-tools/trigger-integration-tests-workflow:
+          name: trigger-integration-dev
+          token-variable: ORB_PUBLISH_TOKEN
+          requires:
+            - orb-tools/publish-dev
+
+  release:
+    when: << pipeline.parameters.run-integration-tests >>
+    jobs:
+      - integration-test
+
+      - orb-tools/dev-promote-prod-from-commit-subject:
+          add-pr-comment: false
+          fail-if-semver-not-indicated: false
+          orb-name: coda/strongdm
+          publish-version-tag: false
+          publish-token-variable: ORB_PUBLISH_TOKEN
+          requires:
+            - integration-test
+          filters:
+            branches:
+              only: master
