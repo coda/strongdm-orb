@@ -17,7 +17,7 @@ commands:
       - run:
           name: Install StrongDM
           command: |
-            wget -O sdm.zip "https://app.strongdm.com/releases/cli/linux"
+            wget -O sdm.zip "https://downloads.strongdm.com/builds/sdm-cli/33.57.0/linux/amd64/0B59586A52D95BDB26494490AFEA82B5BBFDF03E/sdmcli_33.57.0_linux_amd64.zip"
             unzip sdm.zip
             chmod +x sdm
             <<# parameters.use-sudo >>sudo<</ parameters.use-sudo >> mv -f sdm /usr/bin/sdm
