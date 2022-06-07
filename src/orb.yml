@@ -20,5 +20,5 @@ commands:
             wget -O sdm.zip "https://app.strongdm.com/releases/cli/linux"
             unzip sdm.zip
             chmod +x sdm
-            <<# parameters.use-sudo >>sudo<</ parameters.use-sudo >> mv -f sdm /usr/bin/sdm
+            <<# parameters.use-sudo >>sudo<</ parameters.use-sudo >> ./sdm install --nologin --user root
             rm sdm.zip
