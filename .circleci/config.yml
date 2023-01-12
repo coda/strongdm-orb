@@ -28,19 +28,25 @@ workflows:
       - orb-tools/shellcheck
 
       - orb-tools/pack:
+          context:
+            - orb-publishing
           requires:
             - orb-tools/lint
             - orb-tools/shellcheck
 
       - orb-tools/publish-dev:
+          context:
+            - orb-publishing
           orb-name: "coda/strongdm"
-          publish-token-variable: ORB_PUBLISH_TOKEN
+          publish-token-variable: ORB_PUBLISHING_TOKEN
           requires:
             - orb-tools/pack
 
       - orb-tools/trigger-integration-tests-workflow:
+          context:
+            - orb-publishing
           name: trigger-integration-dev
-          token-variable: ORB_PUBLISH_TOKEN
+          token-variable: ORB_PUBLISHING_TOKEN
           requires:
             - orb-tools/publish-dev
 
@@ -50,11 +56,13 @@ workflows:
       - integration-test
 
       - orb-tools/dev-promote-prod-from-commit-subject:
+          context:
+            - orb-publishing
           add-pr-comment: false
           fail-if-semver-not-indicated: false
           orb-name: coda/strongdm
           publish-version-tag: false
-          publish-token-variable: ORB_PUBLISH_TOKEN
+          publish-token-variable: ORB_PUBLISHING_TOKEN
           requires:
             - integration-test
           filters:
