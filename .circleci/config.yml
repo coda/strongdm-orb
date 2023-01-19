@@ -1,71 +1,35 @@
 version: 2.1
-
+setup: true
 orbs:
   orb-tools: circleci/orb-tools@11.6.1
-  shellcheck: circleci/shellcheck@3.1.2
-  strongdm: coda/strongdm@dev:alpha
+  shellcheck: circleci/shellcheck@3.1
 
-parameters:
-  run-integration-tests:
-    type: boolean
-    default: false
-  dev-orb-version:
-    type: string
-    default: "dev:alpha"
-
-jobs:
-  integration-test:
-    executor: orb-tools/ubuntu
-    steps:
-      - checkout
-      - strongdm/install
-      - run: sudo sdm help
+filters: &filters
+  tags:
+    only: /.*/
 
 workflows:
-  dev:
-    unless: << pipeline.parameters.run-integration-tests >>
+  lint-pack:
     jobs:
-      - orb-tools/lint
-      - shellcheck/check
-
+      - orb-tools/lint:
+          filters: *filters
       - orb-tools/pack:
-          context:
-            - orb-publishing
-          requires:
-            - orb-tools/lint
-            - shellcheck/check
-
-      - orb-tools/publish-dev:
-          context:
-            - orb-publishing
-          orb-name: "coda/strongdm"
-          publish-token-variable: ORB_PUBLISHING_TOKEN
-          requires:
-            - orb-tools/pack
-
-      - orb-tools/trigger-integration-tests-workflow:
-          context:
-            - orb-publishing
-          name: trigger-integration-dev
-          token-variable: ORB_PUBLISHING_TOKEN
-          requires:
-            - orb-tools/publish-dev
-
-  release:
-    when: << pipeline.parameters.run-integration-tests >>
-    jobs:
-      - integration-test
-
-      - orb-tools/dev-promote-prod-from-commit-subject:
-          context:
-            - orb-publishing
-          add-pr-comment: false
-          fail-if-semver-not-indicated: false
+          filters: *filters
+      - orb-tools/review:
+          filters: *filters
+      - shellcheck/check:
+          filters: *filters
+      - orb-tools/publish:
           orb-name: coda/strongdm
-          publish-version-tag: false
-          publish-token-variable: ORB_PUBLISHING_TOKEN
+          circleci-token: ORB_PUBLISHING_TOKEN
+          vcs-type: << pipeline.project.type >>
           requires:
-            - integration-test
-          filters:
-            branches:
-              only: main
+            [orb-tools/lint, orb-tools/review, orb-tools/pack, shellcheck/check]
+          context: orb-publishing
+          filters: *filters
+      # Triggers the next workflow in the Orb Development Kit.
+      - orb-tools/continue:
+          pipeline-number: << pipeline.number >>
+          vcs-type: << pipeline.project.type >>
+          requires: [orb-tools/publish]
+          filters: *filters
