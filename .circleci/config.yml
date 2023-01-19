@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
   orb-tools: circleci/orb-tools@11.6.1
+  shellcheck: circleci/shellcheck@3.1.2
   strongdm: coda/strongdm@dev:alpha
 
 parameters:
@@ -25,14 +26,14 @@ workflows:
     unless: << pipeline.parameters.run-integration-tests >>
     jobs:
       - orb-tools/lint
-      - orb-tools/shellcheck
+      - shellcheck/check
 
       - orb-tools/pack:
           context:
             - orb-publishing
           requires:
             - orb-tools/lint
-            - orb-tools/shellcheck
+            - shellcheck/check
 
       - orb-tools/publish-dev:
           context:
