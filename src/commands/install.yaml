@@ -1,0 +1,12 @@
+---
+description: Install the StrongDM CLI
+parameters:
+  use-sudo:
+    type: boolean
+    default: true
+steps:
+  - run:
+      environment:
+        USE_SUDO: <<parameters.use-sudo>>
+      name: Install StrongDM
+      command: <<include(scripts/install.sh)>>
