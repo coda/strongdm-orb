@@ -1,4 +1,4 @@
-# StrongDM Orb for CircleCI
+# StrongDM Orb for Circleci
 
 Use this orb to easily install and use the StrongDM command line tools in your CircleCI workflows.
 
